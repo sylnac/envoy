@@ -12,8 +12,26 @@ from envoy.parser import parse_env_file
 
 
 def _load_schema(schema_path: str) -> dict:
-    """Load a schema .env file where values are rule names (required/optional)."""
-    return parse_env_file(schema_path)
+    """Load a schema .env file where values are rule names (required/optional/non-empty).
+
+    Raises:
+        FileNotFoundError: If the schema file does not exist at the given path.
+        ValueError: If the schema file contains an unrecognised rule value.
+    """
+    schema = parse_env_file(schema_path)
+
+    valid_rules = {"required", "optional", "non-empty"}
+    invalid = {
+        key: value for key, value in schema.items() if value not in valid_rules
+    }
+    if invalid:
+        offenders = ", ".join(f"{k}={v!r}" for k, v in invalid.items())
+        raise ValueError(
+            f"schema contains unrecognised rule(s): {offenders}. "
+            f"Allowed values: {', '.join(sorted(valid_rules))}"
+        )
+
+    return schema
 
 
 def cmd_validate(argv: Optional[List[str]] = None) -> int:
@@ -52,6 +70,9 @@ def cmd_validate(argv: Optional[List[str]] = None) -> int:
             schema = _load_schema(args.schema)
         except FileNotFoundError:
             print(f"error: schema file '{args.schema}' not found", file=sys.stderr)
+            return 2
+        except ValueError as exc:
+            print(f"error: invalid schema — {exc}", file=sys.stderr)
             return 2
         result = validate_against_schema(env, schema, allow_extra=not args.no_extra)
     else:
