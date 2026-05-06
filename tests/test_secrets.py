@@ -46,6 +46,10 @@ def test_mask_value_no_visible_chars():
     result = mask_value("mysecret", visible_chars=0)
     assert result == "***"
 
+def test_mask_value_empty_string():
+    result = mask_value("", visible_chars=4)
+    assert result == "***"
+
 
 # --- mask_secrets ---
 
@@ -62,6 +66,13 @@ def test_mask_secrets_leaves_non_secrets_intact():
 
 def test_mask_secrets_empty_env():
     assert mask_secrets({}) == {}
+
+def test_mask_secrets_does_not_mutate_input():
+    """Ensure mask_secrets returns a new dict and does not modify the original."""
+    env = {"DB_PASSWORD": "hunter2", "APP_NAME": "myapp"}
+    original = env.copy()
+    mask_secrets(env)
+    assert env == original
 
 
 # --- find_secret_keys ---
