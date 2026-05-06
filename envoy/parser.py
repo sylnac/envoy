@@ -58,3 +58,19 @@ def serialize_env(data: Dict[str, str]) -> str:
         else:
             lines.append(f"{key}={value}")
     return "\n".join(lines) + ("\n" if lines else "")
+
+
+def merge_env(base: Dict[str, str], override: Dict[str, str]) -> Dict[str, str]:
+    """Merge two env dictionaries, with override taking precedence.
+
+    Returns a new dictionary containing all keys from both inputs.
+    Keys present in both will use the value from ``override``.
+
+    Args:
+        base: The base environment dictionary.
+        override: Values in this dictionary take precedence over ``base``.
+
+    Returns:
+        A merged dictionary combining both inputs.
+    """
+    return {**base, **override}
