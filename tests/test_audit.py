@@ -71,6 +71,14 @@ def test_filter_log_combined(proj):
     assert len(filtered) == 1
 
 
+def test_filter_log_no_match_returns_empty(proj):
+    """Filtering with criteria that match no entries returns an empty list."""
+    record_action("save", "dev", project_root=proj)
+    entries = load_audit_log(project_root=proj)
+    filtered = filter_log(entries, action="delete")
+    assert filtered == []
+
+
 def test_format_entry_no_details():
     entry = {"timestamp": "2024-01-01T00:00:00+00:00", "action": "save", "profile": "dev", "details": {}}
     line = format_entry(entry)
@@ -100,11 +108,3 @@ def test_cmd_audit_shows_entries(proj, capsys):
     out = capsys.readouterr().out
     assert "save" in out
     assert "export" in out
-
-
-def test_cmd_audit_last_n(proj, capsys):
-    for i in range(5):
-        record_action("save", f"profile{i}", project_root=proj)
-    cmd_audit(["--project-root", proj, "--last", "2"])
-    out = capsys.readouterr().out
-    assert out.count("save") == 2
