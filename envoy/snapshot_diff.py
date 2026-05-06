@@ -18,6 +18,13 @@ class SnapshotComparison:
     to_timestamp: str
     diff: DiffResult
 
+    @property
+    def has_changes(self) -> bool:
+        """Return True if the diff contains any changes."""
+        return bool(
+            self.diff.added or self.diff.removed or self.diff.changed
+        )
+
 
 def compare_snapshots(
     project: str,
