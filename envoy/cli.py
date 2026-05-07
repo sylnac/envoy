@@ -1,44 +1,57 @@
-"""Main CLI entry point for envoy."""
-
+"""Main CLI entry-point for envoy."""
 from __future__ import annotations
 
 import sys
-from typing import List, Optional
-
-USAGE = """envoy — lightweight .env manager
-
-Usage:
-  envoy <command> [options]
-
-Commands:
-  merge     Merge two profiles into one
-  validate  Validate a profile against a schema or required keys
-
-Run `envoy <command> --help` for command-specific help.
-"""
 
 
-def main(argv: Optional[List[str]] = None) -> int:
-    if argv is None:
-        argv = sys.argv[1:]
+def main(argv: list[str] | None = None) -> int:  # pragma: no cover
+    import argparse
 
-    if not argv or argv[0] in ("-h", "--help"):
-        print(USAGE)
-        return 0
+    from envoy.cli_merge import cmd_merge
+    from envoy.cli_validate import cmd_validate
+    from envoy.cli_audit import cmd_audit
+    from envoy.cli_snapshot_diff import cmd_snapshot_diff
+    from envoy.cli_template import cmd_template
+    from envoy.cli_encrypt import cmd_encrypt, cmd_decrypt
+    from envoy.cli_copy import cmd_copy
+    from envoy.cli_search import cmd_search
+    from envoy.cli_compare import cmd_compare
+    from envoy.cli_import import cmd_import
+    from envoy.cli_rollback import cmd_rollback
+    from envoy.cli_tag import cmd_tag
 
-    command, rest = argv[0], argv[1:]
+    parser = argparse.ArgumentParser(
+        prog="envoy",
+        description="Lightweight .env file manager with per-project profiles.",
+    )
+    sub = parser.add_subparsers(dest="command")
 
-    if command == "merge":
-        from envoy.cli_merge import cmd_merge
-        return cmd_merge(rest)
+    commands = {
+        "merge": cmd_merge,
+        "validate": cmd_validate,
+        "audit": cmd_audit,
+        "snapshot-diff": cmd_snapshot_diff,
+        "template": cmd_template,
+        "encrypt": cmd_encrypt,
+        "decrypt": cmd_decrypt,
+        "copy": cmd_copy,
+        "search": cmd_search,
+        "compare": cmd_compare,
+        "import": cmd_import,
+        "rollback": cmd_rollback,
+        "tag": cmd_tag,
+    }
 
-    if command == "validate":
-        from envoy.cli_validate import cmd_validate
-        return cmd_validate(rest)
+    for name in commands:
+        sub.add_parser(name)
 
-    print(f"error: unknown command '{command}'", file=sys.stderr)
-    print(USAGE, file=sys.stderr)
-    return 2
+    args, rest = parser.parse_known_args(argv)
+
+    if args.command in commands:
+        return commands[args.command](rest)
+
+    parser.print_help()
+    return 1
 
 
 if __name__ == "__main__":
