@@ -80,3 +80,14 @@ def test_clear_tags_nonexistent_profile_is_safe(proj):
 def test_tags_isolated_per_profile(proj):
     add_tag(proj, "dev", "local")
     assert get_tags(proj, "prod") == []
+
+
+def test_add_multiple_tags_to_profile(proj):
+    """Adding several distinct tags to a profile should all be retained."""
+    tag_names = ["local", "debug", "experimental"]
+    for tag in tag_names:
+        add_tag(proj, "dev", tag)
+    tags = get_tags(proj, "dev")
+    for tag in tag_names:
+        assert tag in tags
+    assert len(tags) == len(tag_names)
