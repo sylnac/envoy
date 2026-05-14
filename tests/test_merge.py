@@ -45,6 +45,14 @@ def test_merge_error_strategy_no_conflict_ok():
     assert result == {"A": "1", "B": "2"}
 
 
+def test_merge_invalid_strategy_raises():
+    """An unrecognised strategy name should raise a ValueError."""
+    base = {"A": "1"}
+    other = {"A": "2"}
+    with pytest.raises(ValueError, match="Unknown strategy"):
+        merge_profiles(base, other, strategy="unknown")
+
+
 def test_merge_does_not_mutate_base():
     base = {"A": "1"}
     other = {"A": "2", "B": "3"}
